@@ -58,7 +58,7 @@ def stopup():
 def run():  #start image capturing and TFlite detection Model
   # Arguments
     model = 'efficientdet_lite0.tflite'
-    camera_id = 8
+    camera_id = 0
     width = 640
     height = 480
     num_threads = 4
