@@ -93,7 +93,6 @@ Webserver Framework:
 python3 -m pip install flask
 
 
-
 Fork Github TF-Lite Source Repository:
 git clone https://github.com/tensorflow/examples --depth 1
 
@@ -114,18 +113,18 @@ python detect.py
 Alte datei löschen:
 rm detect.py
 
-Neue detect.py herunterladen: (Zur Objekterkennung und des Webservers)
-wget https://raw.githubusercontent.com/Lacuranas/muell-sammel-roboter/main/scripts/detect.py
-
-Neue Roboter.py herunterladen: (zur steuerung des Roboters)
-wget https://raw.githubusercontent.com/Lacuranas/muell-sammel-roboter/main/scripts/roboter.py
+Neue Dateien herunterladen:
+....
 
 2. Running
 python roboter.py
 	Erwartete Ausgabe:
-		started Webser on Port 8080 / 80
 		INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
-		Object Detection running
+
+		Started Webserver on 0.0.0.0:8080
+		Accessible via http://localhost:8080
+		
+		Press STRG+C to quit
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
