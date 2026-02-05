@@ -1,57 +1,375 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-
-    <title>Schwarmintelligente Müll Roboter</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schwarmintelligente Müllroboter</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<script>
-function httpGet(subsite)
-{
-    const url = window.location.href + subsite;
-    console.log(url);
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", url , false ); // false for synchronous request
-    xmlHttp.send( null );
-    console.log(xmlHttp.responseText)
-    return xmlHttp.responseText;
-}
-function pressButton() {
-    console.log("Press");
-    httpGet("startup");
-}
-function releaseButton(){
-    console.log("Release");
-    httpGet("stopup");
-}
-
-function release(){
-
-}
-</script>
 <body>
 <div class="container">
-    <div class="row">
-        <div class="col-lg-8  offset-lg-2">
-            <h3 class="mt-5">Live Streaming</h3>
-            <img src="{{ url_for('video_feed') }}" width="100%">
-        </div>
-    </div>
-    <div>
-        <button class="button" type="button" onclick="httpGet()" 
-            onmousedown="pressButton()"
-            onmouseup="releaseButton()"
-            ontouchstart="pressButton()"
-            ontouchend="releaseButton()">
-            print test
-        </button>
-    </div>
+<h1 class="title">Schwarmintelligente Müllroboter</h1>
+<div class="layout">
+<!-- Video Panel -->
+<div class="panel video-container">
+<h3>Live Video Feed</h3>
+<img src="{{ url_for('video_feed') }}" alt="Live Video">
 </div>
+<!-- Controls Panel -->
+<div class="panel">
+<div class="control-header">
+<h3>Steuerung</h3>
+<div class="info-icon-container">
+<div class="info-icon">?</div>
+<div class="info-tooltip">
+Steuern Sie die Roboter mit den Pfeiltasten. Halten Sie eine Taste gedrückt für kontinuierliche Bewegung.
+</div>
+</div>
+</div>
+<div class="controls">
+<!-- Up -->
+<button class="control-btn btn-up" data-direction="up">↑</button>
+<!-- Left/Right -->
+<div class="button-row">
+<button class="control-btn btn-left" data-direction="left">←</button>
+<button class="control-btn btn-right" data-direction="right">→</button>
+</div>
+<!-- Down -->
+<button class="control-btn btn-down" data-direction="down">↓</button>
+</div>
+
+<!-- Statusanzeige für Intelligenz-Modus -->
+<div id="intelligenceStatus" class="intelligence-status inactive">
+Intelligenz-Modus: INAKTIV
+</div>
+
+<div class="hint">
+Button gedrückt halten für kontinuierliche Bewegung
+</div>
+
+<!-- Neue Checkboxen für Intelligenz-Steuerung -->
+<div class="intelligence-controls">
+<div class="checkbox-container">
+<div class="checkbox-with-info">
+<label class="checkbox-label">
+<input type="checkbox" id="intelligenceCheckbox" class="intelligence-checkbox" checked>
+Intelligenz
+</label>
+<div class="info-icon-container">
+<div class="checkbox-info-icon">?</div>
+<div class="checkbox-tooltip">
+Aktiviert die Funktion des Roboters, intelligent nach Müll zu suchen und diesen selbstständig einzusammeln
+</div>
+</div>
+</div>
+</div>
+<div class="checkbox-container">
+<div class="checkbox-with-info">
+<label class="checkbox-label">
+<input type="checkbox" id="swarmIntelligenceCheckbox" class="intelligence-checkbox swarm-disabled" checked>
+Schwarmintelligenz
+</label>
+<div class="info-icon-container">
+<div class="checkbox-info-icon">?</div>
+<div class="checkbox-tooltip">
+Die Schwarmintelligenz sorgt dafür, dass alle Roboter intelligent zusammenarbeiten und somit den Müll noch schneller einsammeln können
+</div>
+</div>
+</div>
+</div>
+<!-- Erklärungstext für Schwarmintelligenz -->
+<div id="swarmExplanation" class="swarm-explanation">
+<p><strong>Hinweis:</strong> Schwarmintelligenz erfordert den aktiven Intelligenz-Modus. Bitte aktivieren Sie zuerst "Intelligenz".</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Pop-up Dialog -->
+<div id="popupOverlay" class="popup-overlay">
+<div class="popup-dialog">
+<h3 class="popup-title">Automatische Steuerung deaktivieren und Roboter manuell steuern?</h3>
+<p style="text-align: center; color: #555; line-height: 1.5;">
+Der Roboter befindet sich im automatischen Intelligenz-Modus.<br>
+Möchten Sie zur manuellen Steuerung wechseln?
+</p>
+<div class="popup-buttons">
+<button id="popupNo" class="popup-btn popup-btn-no">NEIN (automatisch fortfahren)</button>
+<button id="popupYes" class="popup-btn popup-btn-yes">JA (manuell steuern)</button>
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Globale Variablen
+let activeButton = null;
+let isTouchDevice = 'ontouchstart' in window;
+let intelligenceEnabled = true; // Standardmäßig aktiviert
+let swarmIntelligenceEnabled = true; // Standardmäßig aktiviert
+let pendingDirection = null;
+let pendingAction = null;
+
+// Elemente
+const buttons = document.querySelectorAll('.control-btn');
+const intelligenceCheckbox = document.getElementById('intelligenceCheckbox');
+const swarmIntelligenceCheckbox = document.getElementById('swarmIntelligenceCheckbox');
+const intelligenceStatus = document.getElementById('intelligenceStatus');
+const swarmExplanation = document.getElementById('swarmExplanation');
+const popupOverlay = document.getElementById('popupOverlay');
+const popupYes = document.getElementById('popupYes');
+const popupNo = document.getElementById('popupNo');
+
+// Setze Checkboxen standardmäßig aktiviert
+intelligenceCheckbox.checked = true;
+swarmIntelligenceCheckbox.checked = true;
+
+// Initialisiere Status
+updateIntelligenceStatus();
+
+// Lade aktuellen Status vom Server (falls benötigt)
+fetchIntelligenceStatus();
+
+// Event Listeners für Bewegungs-Buttons
+buttons.forEach(button => {
+const direction = button.dataset.direction;
+// Maus-Events
+button.addEventListener('mousedown', (e) => {
+if (!isTouchDevice) {
+handleButtonPress(direction, 'start', e);
+}
+});
+button.addEventListener('mouseup', (e) => {
+if (!isTouchDevice && activeButton === direction) {
+handleButtonRelease(direction, 'stop', e);
+}
+});
+button.addEventListener('mouseleave', (e) => {
+if (!isTouchDevice && activeButton === direction) {
+handleButtonRelease(direction, 'stop', e);
+}
+});
+// Touch-Events
+button.addEventListener('touchstart', (e) => {
+e.preventDefault();
+handleButtonPress(direction, 'start', e);
+});
+button.addEventListener('touchend', (e) => {
+e.preventDefault();
+if (activeButton === direction) {
+handleButtonRelease(direction, 'stop', e);
+}
+});
+});
+
+// Event Listener für Intelligenz Checkbox
+intelligenceCheckbox.addEventListener('change', function() {
+updateIntelligence('intelligence', this.checked);
+});
+
+// Event Listener für Schwarmintelligenz Checkbox
+swarmIntelligenceCheckbox.addEventListener('click', function(e) {
+// Wenn Intelligenz nicht aktiv ist
+if (!intelligenceEnabled) {
+e.preventDefault();
+// Verhindere das Ankreuzen
+this.checked = false;
+// Zeige den gelben Hinweistext
+showSwarmExplanation();
+// Füge einen kurzen visuellen Effekt hinzu
+this.style.transform = 'scale(0.95)';
+setTimeout(() => {
+this.style.transform = 'scale(1)';
+}, 100);
+return false;
+}
+});
+
+swarmIntelligenceCheckbox.addEventListener('change', function() {
+// Nur verarbeiten, wenn Intelligenz aktiv ist
+if (intelligenceEnabled) {
+updateIntelligence('swarmIntelligence', this.checked);
+}
+});
+
+// Event Listener für Pop-up Buttons
+popupYes.addEventListener('click', function() {
+// Deaktiviere Intelligenz und Schwarmintelligenz
+intelligenceCheckbox.checked = false;
+updateIntelligence('intelligence', false);
+// Schließe Pop-up
+popupOverlay.classList.remove('active');
+// Sende den ausstehenden Bewegungsbefehl
+if (pendingDirection && pendingAction) {
+sendMovementRequest(pendingDirection, pendingAction);
+if (pendingAction === 'start') {
+activeButton = pendingDirection;
+}
+}
+pendingDirection = null;
+pendingAction = null;
+});
+
+popupNo.addEventListener('click', function() {
+// Schließe Pop-up ohne Änderungen
+popupOverlay.classList.remove('active');
+pendingDirection = null;
+pendingAction = null;
+});
+
+// Schließe Pop-up bei Klick außerhalb
+popupOverlay.addEventListener('click', function(e) {
+if (e.target === popupOverlay) {
+popupOverlay.classList.remove('active');
+pendingDirection = null;
+pendingAction = null;
+}
+});
+
+// Events stoppen wenn Seite verlassen wird
+document.addEventListener('visibilitychange', () => {
+if (activeButton) {
+sendMovementRequest(activeButton, 'stop');
+activeButton = null;
+}
+});
+
+window.addEventListener('blur', () => {
+if (activeButton) {
+sendMovementRequest(activeButton, 'stop');
+activeButton = null;
+}
+});
+
+// Funktionen
+function handleButtonPress(direction, action, event) {
+if (intelligenceEnabled) {
+// Zeige Pop-up an
+pendingDirection = direction;
+pendingAction = action;
+popupOverlay.classList.add('active');
+event.preventDefault();
+return false;
+} else {
+activeButton = direction;
+sendMovementRequest(direction, action);
+return true;
+}
+}
+
+function handleButtonRelease(direction, action, event) {
+if (!intelligenceEnabled) {
+sendMovementRequest(direction, action);
+if (activeButton === direction) {
+activeButton = null;
+}
+}
+}
+
+function sendMovementRequest(direction, action) {
+fetch(`/${direction}/${action}`, {
+method: 'GET'
+}).catch(err => console.error('Fetch error:', err));
+}
+
+function updateIntelligence(type, value) {
+fetch(`/intelligence/${type}/${value ? 'true' : 'false'}`, {
+method: 'GET'
+})
+.then(response => {
+if (response.ok) {
+// Aktualisiere lokale Variablen
+if (type === 'intelligence') {
+intelligenceEnabled = value;
+intelligenceCheckbox.checked = value;
+if (!value) {
+swarmIntelligenceEnabled = false;
+swarmIntelligenceCheckbox.checked = false;
+hideSwarmExplanation();
+}
+} else if (type === 'swarmintelligence') {
+swarmIntelligenceEnabled = value;
+swarmIntelligenceCheckbox.checked = value;
+}
+updateIntelligenceStatus();
+updateButtonStates();
+updateCheckboxStyles();
+}
+})
+.catch(err => console.error('Fetch error:', err));
+}
+
+function fetchIntelligenceStatus() {
+fetch('/get_intelligence_status')
+.then(response => response.json())
+.then(data => {
+intelligenceEnabled = data.intelligence;
+swarmIntelligenceEnabled = data.swarmIntelligence;
+intelligenceCheckbox.checked = intelligenceEnabled;
+swarmIntelligenceCheckbox.checked = swarmIntelligenceEnabled;
+updateIntelligenceStatus();
+updateButtonStates();
+updateCheckboxStyles();
+})
+.catch(err => console.error('Fetch error:', err));
+}
+
+function updateIntelligenceStatus() {
+if (intelligenceEnabled) {
+intelligenceStatus.textContent = 'Intelligenz-Modus: AKTIV';
+intelligenceStatus.className = 'intelligence-status active';
+} else {
+intelligenceStatus.textContent = 'Intelligenz-Modus: INAKTIV';
+intelligenceStatus.className = 'intelligence-status inactive';
+}
+}
+
+function updateButtonStates() {
+buttons.forEach(button => {
+if (intelligenceEnabled) {
+button.classList.add('disabled');
+button.disabled = true;
+} else {
+button.classList.remove('disabled');
+button.disabled = false;
+}
+});
+}
+
+function updateCheckboxStyles() {
+// Passe das Styling der Schwarmintelligenz-Checkbox an
+if (!intelligenceEnabled) {
+swarmIntelligenceCheckbox.classList.add('swarm-disabled');
+} else {
+swarmIntelligenceCheckbox.classList.remove('swarm-disabled');
+}
+}
+
+function showSwarmExplanation() {
+// Zeige den gelben Hinweistext
+swarmExplanation.classList.add('show');
+// Verstecke die Erklärung nach 5 Sekunden automatisch
+setTimeout(hideSwarmExplanation, 5000);
+}
+
+function hideSwarmExplanation() {
+swarmExplanation.classList.remove('show');
+}
+
+// Initialisiere die Seite
+updateButtonStates();
+updateCheckboxStyles();
+
+// Debug-Funktion (kann in der Konsole aufgerufen werden)
+window.showSwarmExplanation = showSwarmExplanation;
+window.hideSwarmExplanation = hideSwarmExplanation;
+});
+
+// Verhindert Fokus-Styling
+document.querySelectorAll('.control-btn').forEach(btn => {
+btn.addEventListener('click', (e) => e.preventDefault());
+});
+</script>
 </body>
 </html>
