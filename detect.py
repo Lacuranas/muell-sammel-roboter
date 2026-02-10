@@ -17,6 +17,7 @@ from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
+import os
 
 class ObjectDetector:
     def __init__(self, camera_id=8, model='efficientdet_lite0.tflite'):
@@ -51,6 +52,7 @@ class ObjectDetector:
         return self.cap.isOpened()
 
     def run_detection(self):
+        os.environ['QT_QPA_PLATFORM'] = 'xcb'  # force X11 instead of Wayland
         """Run the main detection loop."""
         if not self.initialize():
             print("ERROR: Unable to initialize camera.")
