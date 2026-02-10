@@ -7,6 +7,7 @@
 # The Project was developt for TEx of the Gymnasium Höchstadt
 #
 # Working time ~3h (this script)
+# Version: 1.0
 
 # Main script to run object detection and webserver.
 import threading
