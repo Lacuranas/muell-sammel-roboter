@@ -6,7 +6,7 @@
 #
 # The Project was developt for TEx of the Gymnasium Höchstadt
 #
-# Working time ~16h
+# Working time ~16h (all)
 # Version: 1.0
 
 # Object detection routine
