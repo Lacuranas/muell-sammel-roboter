@@ -18,7 +18,7 @@ import sys
 
 def startDetectionWebserver():
     # Initialize detector
-    detector = detect.ObjectDetector(camera_id=8)
+    detector = detect.ObjectDetector(camera_id=0)
     
     # Start Object Detection Thread
     detection_thread = threading.Thread(target=detector.run_detection)
