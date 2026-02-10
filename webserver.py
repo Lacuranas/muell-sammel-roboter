@@ -5,7 +5,8 @@
 #
 # The Project was developt for TEx of the Gymnasium Höchstadt
 #
-# Working time ~8h
+# Working time ~8h (this script)
+# Version: 1.0
 
 import cv2
 from flask import Flask, render_template, Response, jsonify
