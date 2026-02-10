@@ -1,0 +1,9 @@
+argparse
+numpy==1.26.4
+opencv-python~=4.5.3.56
+tflite-support>=0.4.2
+protobuf>=3.18.0,<4
+tflite-runtime>=2.14.0
+gevent>=25.9.0
+waitress>=3.0.0
+flask>=3.1.0
