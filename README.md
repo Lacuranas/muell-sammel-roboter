@@ -1,39 +1,38 @@
 # muell-sammel-roboter
 The Respoitory for our school Project for scailability
 
------------------------------------------------------------------------------------------------------------------------------------------------
 
-Ziel: Bild erkennungs KI die verschiedene Müllsorten erkennen und auseinanderhalten kann und ihre Position im Live Bild angibt.
+# Ziel: Bild erkennungs KI die verschiedene Müllsorten erkennen und auseinanderhalten kann und ihre Position im Live Bild angibt.
 Der Webserver ist zur Überwachung und Fernsteuerung der Software
 
 Übersicht:
-0. Vorbereitung:
-	1. Installation von Raspi-OS (64bit) auf dem Rapsi 5 (min 8gb ram)
+1. Vorbereitung:
+	1. Installation von Raspi-OS (64bit) auf dem Rapsi 5 (min 4GB ram, empfohlen 8GB ram)
 	2. Paket Update und Upgrade
 	3. Installation PyEnv (Python Manage Library)
 	4. Installieren von Python 3.9.2 neben System Python
-	5. Virtuelle Umgebung erstellen
 
-1. Installation
-	1. Installation Tensor Flow Lite Pakete
-	2. Installation Webserver Pakete
-	3. Setup TF-Lite Objekt Erkennung
-	4. Scripts von Github Laden
+2. Installation
+	1. Github Repository klonen
+	2. Virtuelle Python Umgebung erstellen
+	3. Benötigte Pakete installieren
 
-2. Starten / Laufen lassen
+3. Starten / Laufen lassen
 	1. Testen
+
+4. Abschluss
 
 ____
 
-0. Vorbereitung
+# 1. Vorbereitung
 
-1. Installation von Raspi-OS (64bit)
+1.1 Installation von Raspi-OS (64bit)
 Es läuft auch auf 32bit, aber durch 64bit architektur ist es viel schneller
 
-2. Paket Update und Upgrade
-sudo apt update && sudo apt upgrade -yvb
+1.2 Paket Update und Upgrade
+sudo apt update && sudo apt upgrade -y
 
-3. Installation PyEnv (Python Manage Library)
+1.3 Installation PyEnv (Python Manage Library)
 Installer von pyenv herunterladen und ausführen
 curl https://pyenv.run | bash
 
@@ -62,14 +61,14 @@ pyenv local 3.9.2
 Das Python venv Module installiere um die virtuelle Umgebung zu ersetllen.
 sudo apt install python3-venv -y
 
-Die virtuelle Umgebung erstellen:
+
+# 2. Installation
+
+2.1 Github Repository klonen
+git clone https://github.com/Lacuranas/muell-sammel-roboter.git ./ --depth 1
+
+2.2 Virtuelle Umgebung erstellen
 python -m venv env
-
-Update pip:
-python3 -m pip install --upgrade pip
-
-
-1. Installation
 
 source ./env/bin/activate
 
@@ -77,56 +76,31 @@ Version überprüfen:
 python -V
 Erwartete ausgabe: 3.9.2
 
-Install required Packages
+2.3 Benötigte Pakete installieren
+Update pip:
+python3 -m pip install --upgrade pip
 
-picture processing:
-python3 -m pip install numpy==1.26.4
-
-TF-Lite runtime:
-python3 -m pip install tflite-runtime 
-
-Webserver engine:
-python3 -m pip install gevent
-python3 -m pip install waitress
-
-Webserver Framework:
-python3 -m pip install flask
+Install required Packages:
+python3 -m pip install -r requirements.txt
 
 
-Fork Github TF-Lite Source Repository:
-git clone https://github.com/tensorflow/examples --depth 1
-
-Enter object detection folder for raspi:
-cd examples/lite/examples/object_detection/raspberry_pi
-
-Start the setup agent to download the Model and set it up:
-sh setup.sh
-
-Test the basic Object Detection:
-python detect.py
-	Erwartete ausgabe:
-	INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
-	Ein Fenster öffnet sich und dort ist die Kamera ansicht zu sehen. In den Boxen sind die 	erkannten Objekte mit den Wahrscheinlichkeiten oben links an der 
-
-4. Scripts von Github laden:
-
-Alte datei löschen:
-rm detect.py
-
-Neue Dateien herunterladen:
-....
-
-2. Running
-python roboter.py
+# 3. Running
+python main.py
 	Erwartete Ausgabe:
 		INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
 
 		Started Webserver on 0.0.0.0:8080
 		Accessible via http://localhost:8080
-		
+
 		Press STRG+C to quit
 
------------------------------------------------------------------------------------------------------------------------------------------------
+		Es öffnet sich ein Fenster mit der live Kamera Ansicht. Die Rechtecke umgeben jeweils ein erkanntes Müll Objekt, darüber steht die Müllsorte.
+		Ein Webserver wird auf Port 8080 gestartet, der die Webseite bereitstellt.
+
+
+# 4. Abschluss
+Du hast nun eine Bilderkennung die Müll über eine Tensor Flow Lite KI erkennt und die Position und Müllsorte von diesem Anzeigt.
+Außerdem hast du einen Webserver mit dem du den Roboter vernsteuern kannst und sein Live Bild siehst.
 
 
 This is based on Tensor Flow Lite and this github repo: 
