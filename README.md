@@ -4,6 +4,9 @@ The Respoitory for our school Project for scailability
 # Ziel: Bild erkennungs KI die verschiedene Müllsorten erkennen und auseinanderhalten kann und ihre Position im Live Bild angibt.
 Der Webserver ist zur Überwachung und Fernsteuerung der Software
 
+<img width="1849" height="1095" alt="auto" src="https://github.com/user-attachments/assets/071d95f3-1fb1-474b-9413-61bc0704c38d" />
+
+
 Übersicht:
 1. Vorbereitung:
 	1. Installation von Raspi-OS (64bit) auf dem Rapsi 5 (min 4GB ram, empfohlen 8GB ram)
@@ -100,6 +103,9 @@ python main.py
 # 4. Abschluss
 Du hast nun eine Bilderkennung die Müll über eine Tensor Flow Lite KI erkennt und die Position und Müllsorte von diesem Anzeigt.
 Außerdem hast du einen Webserver mit dem du den Roboter vernsteuern kannst und sein Live Bild siehst.
+
+<img width="1846" height="1052" alt="manual" src="https://github.com/user-attachments/assets/513da2d8-ca54-48e8-bd72-be3ee15a9cf7" />
+
 
 This is based on Tensor Flow Lite and this github repo: 
 https://github.com/tensorflow/examples/tree/master/lite/examples/object_detection/raspberry_pi
